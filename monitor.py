@@ -22,7 +22,7 @@ STATE_FILE = Path(__file__).with_name("state.json")
 CONFIG_FILE = Path(__file__).with_name("config.json")
 
 FH_TOKEN = os.environ.get("FH_TOKEN", "").strip()
-TG_TOKEN = os.environ.get("TG_TOKEN", "").strip()
+TG_TOKEN = os.environ.get("TG_TOKEN", "").strip().removeprefix("bot")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "").strip()
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 
@@ -108,7 +108,10 @@ def ask_claude(p):
 # ---------------- Telegram ----------------
 def tg(method, **data):
     r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/{method}", json=data, timeout=30)
-    return r.json()
+    try:
+        return r.json()
+    except ValueError:
+        return {"ok": False, "description": f"HTTP {r.status_code}"}
 
 
 def find_chat_id(st):
@@ -116,9 +119,20 @@ def find_chat_id(st):
         return TG_CHAT_ID
     if st.get("chat_id"):
         return st["chat_id"]
+    me = tg("getMe")
+    if not me.get("ok"):
+        sys.exit(f"Telegram не приймає TG_TOKEN: {me.get('description')}. Перевір секрет TG_TOKEN.")
+    print("Бот за токеном:", "@" + me["result"].get("username", "?"))
     upd = tg("getUpdates")
+    if not upd.get("ok") and "webhook" in str(upd.get("description", "")).lower():
+        tg("deleteWebhook")
+        upd = tg("getUpdates")
+    if not upd.get("ok"):
+        print("getUpdates помилка:", upd.get("description"))
+    print("Оновлень від Telegram:", len(upd.get("result", [])))
     for u in reversed(upd.get("result", [])):
-        chat = (u.get("message") or {}).get("chat") or {}
+        msg = u.get("message") or u.get("edited_message") or {}
+        chat = msg.get("chat") or {}
         if chat.get("type") == "private":
             st["chat_id"] = str(chat["id"])
             return st["chat_id"]
