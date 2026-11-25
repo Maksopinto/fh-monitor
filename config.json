@@ -1,0 +1,27 @@
+{
+  "skill_ids": [
+    180,
+    175,
+    189,
+    22
+  ],
+  "claude_model": "claude-sonnet-5-5",
+  "exclude_words": [
+    "вейп",
+    "жиж",
+    "под систем",
+    "казино",
+    "гемблінг",
+    "ставки на спорт",
+    "крипт",
+    "18+",
+    "накрут",
+    "урок",
+    "репетитор",
+    "курс для",
+    "навчити мене",
+    "масові розсилки",
+    "масова розсилка"
+  ],
+  "profile": "Максим, Львів. Будує AI-ботів і автоматизації: n8n + Claude/OpenAI, Telegram-боти з AI, RAG (чат по документах), Google Sheets, сповіщення власнику, захист ботів (rate limit, prompt injection). Python на базовому рівні, мережі, кібербезпека. На Freelancehunt ще без відгуків.\nПортфоліо:\n- https://github.com/Maksopinto/AI-Receptionist — AI-адміністратор у Telegram на n8n + Claude: відповідає клієнтам за базою знань, записує заявки в Google Sheets, сповіщає власника, є відео-демо.\n- https://github.com/Maksopinto/DocChat — десктопний RAG-чат по документах (онлайн/офлайн модель).\n- https://github.com/Maksopinto/FamilyBudget — Telegram-бот обліку бюджету з AI-розбором витрат."
+}
