@@ -68,8 +68,13 @@ def fetch_projects():
 
 
 def hard_excluded(p):
+    """Повертає стоп-слово, через яке проєкт відкинуто, або None.
+    Слово шукаємо лише з початку слова: «крипт» ловить «криптовалюту», але не «скрипт»."""
     text = (p["name"] + " " + p["description"]).lower()
-    return any(w in text for w in CFG["exclude_words"])
+    for w in CFG["exclude_words"]:
+        if re.search(r"(?<!\w)" + re.escape(w.lower()), text):
+            return w
+    return None
 
 
 # ---------------- Claude ----------------
@@ -196,7 +201,9 @@ def main():
     sent = 0
     for p in reversed(new):  # від старіших до новіших
         st["seen"].append(p["id"])
-        if hard_excluded(p):
+        bad = hard_excluded(p)
+        if bad:
+            print(f'SKIP stop-word "{bad}": {p["id"]} {p["name"]}')
             continue
         ai = None
         if ANTHROPIC_KEY:
@@ -205,8 +212,10 @@ def main():
             except Exception as ex:
                 ai = {"fit": True, "why": f"Claude недоступний ({str(ex)[:80]}), перевір сам."}
             if not ai.get("fit"):
+                print(f'SKIP claude: {p["id"]} {p["name"]} | {ai.get("why", "")}')
                 continue
         send(chat_id, fmt(p, ai))
+        print(f'SENT: {p["id"]} {p["name"]}')
         sent += 1
     save_state(st)
     print(f"projects={len(projects)} new={len(new)} sent={sent}")
